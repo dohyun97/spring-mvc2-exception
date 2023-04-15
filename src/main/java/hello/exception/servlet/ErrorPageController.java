@@ -1,11 +1,18 @@
 package hello.exception.servlet;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Controller
@@ -41,5 +48,27 @@ public class ErrorPageController {
         log.info("ERROR_SERVLET_NAME: {}", request.getAttribute(ERROR_SERVLET_NAME));
         log.info("ERROR_STATUS_CODE: {}", request.getAttribute(ERROR_STATUS_CODE));
         log.info("dispatchType={}", request.getDispatcherType());
+    }
+
+    @RequestMapping(value = "/error-page/500",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String,Object>> errorPage500Api(HttpServletRequest request,HttpServletResponse response){
+        log.info("API Error Page 500");
+
+        Map<String,Object> result = new HashMap<>();
+        Exception ex =(Exception)request.getAttribute(ERROR_EXCEPTION);
+        result.put("status",request.getAttribute(ERROR_STATUS_CODE));
+        result.put("message",ex.getMessage());
+
+        //아래거나 이거: Integer statusCode= (Integer) request.getAttribute(ERROR_STATUS_CODE); 사용가능 둘이 같아
+        Integer statusCode= (Integer) request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+
+//        log.info("request.getAttribute(ERROR_MESSAGE): {} ",request.getAttribute(ERROR_MESSAGE));
+//        log.info("ex.getMessage(): {} ",ex.getMessage());
+//        log.info("RequestDispatcher.ERROR_STATUS_CODE: {} ", RequestDispatcher.ERROR_STATUS_CODE);
+//        log.info("request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE): {}",request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE));
+//        log.info("request.getAttribute(ERROR_STATUS_CODE): {} ",request.getAttribute(ERROR_STATUS_CODE));
+
+
+        return new ResponseEntity<>(result, HttpStatus.valueOf(statusCode));
     }
 }
